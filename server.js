@@ -10,7 +10,7 @@ const fccTestingRoutes  = require('./routes/fcctesting.js');
 const runner            = require('./test-runner');
 
 let app = express();
-dbConnect();
+
 app.use('/public', express.static(process.cwd() + '/public'));
 
 app.use(cors({origin: '*'})); //For FCC testing purposes only
@@ -36,8 +36,12 @@ app.route('/')
 fccTestingRoutes(app);
 
 //Routing for API 
-apiRoutes(app);  
-    
+
+dbConnect(async (client)=>{
+  let issueDb = await client.db("issueDb");
+  apiRoutes(app,issueDb);
+});
+
 //404 Not Found Middleware
 app.use(function(req, res, next) {
   res.status(404)
