@@ -38,8 +38,7 @@ fccTestingRoutes(app);
 //Routing for API 
 
 dbConnect(async (client)=>{
-  let issueDb = await client.db("issueDb");
-  apiRoutes(app,issueDb);
+  apiRoutes(app,client);
 });
 
 //404 Not Found Middleware
