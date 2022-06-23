@@ -1,6 +1,7 @@
+require('dotenv').config();
 const {MongoMemoryServer} =require('mongodb-memory-server');
 const {MongoClient} = require("mongodb");
-module.exports = async function  dbConnect(callback){
+async function  main(callback){
     let client;
     if(process.env.NODE_ENV==="test"){
         try{
@@ -14,6 +15,7 @@ module.exports = async function  dbConnect(callback){
             console.error(e)
         }
     }else{
+        console.log("im in else")
         client=new MongoClient(process.env.MONGO_URI);
         try{
         await client.connect();
@@ -23,3 +25,4 @@ module.exports = async function  dbConnect(callback){
         }
     }
 }
+module.exports = main;

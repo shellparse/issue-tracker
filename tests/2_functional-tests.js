@@ -17,7 +17,8 @@ suite('Functional Tests', function() {
       created_on:new Date(),
       updated_on:new Date()
     }).end((err,res)=>{
-      err?console.log(err):console.log(res)
+      err?console.log(err):console.log(res.body.acknowledged)
     })
   })
 });
+// check why validation not working

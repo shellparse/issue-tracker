@@ -1,8 +1,7 @@
-'use strict';
 
-module.exports = function (app,client) {
-  //data base validations
-  let db = client.db("issuesDb",{validator:{
+
+module.exports = async function  (app,client) {
+  let db = await client.db("issuesDb",{validator:{
     $jsonSchema:{
       bsonType:"object",
       required:["issue_title","issue_text","created_by"],
@@ -38,31 +37,53 @@ module.exports = function (app,client) {
       }
     }
   }
-})
-  app.route('/api/issues/:project')
   
-    .get(function (req, res){
+})
+//root
+app.route('/')
+.get(function (req, res) {
+  res.sendFile(process.cwd() + '/views/index.html');
+});
+
+//Sample front-end
+app.route('/:project/')
+.get(function (req, res) {
+  let col = db.collection(req.params.project);
+  res.sendFile(process.cwd() + '/views/issue.html');
+});
+
+  app.route('/api/issues/:project')
+
+    .get(function get(req, res){
       let project = req.params.project;
-      
+      let col = db.collection(project);
+      res.send(project);
     })
     
-    .post(function (req, res){
+    .post(async function (req, res){
       let project = req.params.project;
+      let col = db.collection(project);
       console.log(`a request to open an issue with project ${project} has been received`);
-      db.insertOne(req.body,(err,doc)=>{
-        err?console.error(err):console.log("success")
+      col.insertOne(req.body,(err,doc)=>{
+        err?console.error(err):res.send(doc)
       })
       
     })
     
     .put(function (req, res){
       let project = req.params.project;
-      
+      let col = db.collection(project);
     })
     
     .delete(function (req, res){
       let project = req.params.project;
-      
+      let col = db.collection(project);
+    });  
+    //404 Not Found Middleware
+    app.use(function(req, res, next) {
+      res.status(404)
+        .type('text')
+        .send('Not Found');
     });
-    
+
 };
