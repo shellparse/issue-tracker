@@ -12,6 +12,7 @@ suite('Functional Tests', function() {
       assigned_to:"mido",
       status_text:"we still working on it",
       open:true,
+      created_by:"mizo",
       issue_title:"can some one fix my shit",
       issue_text:"i cannot log in for the last week",
       created_on:new Date(),
