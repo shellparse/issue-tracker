@@ -15,7 +15,6 @@ async function  main(callback){
             console.error(e)
         }
     }else{
-        console.log("im in else")
         client=new MongoClient(process.env.MONGO_URI);
         try{
         await client.connect();
