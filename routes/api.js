@@ -1,34 +1,34 @@
 const schema = {
   $jsonSchema:{
-    bsonType:Object,
+    bsonType:"object",
     required:["issue_title","issue_text","created_by"],
     properties:{
         assigned_to:{
-          bsonType:String,
+          bsonType:"string",
           description:"the person to whom the issue is assigned"
         },
         status_text: {
-          bsonType:String,
+          type:"string",
           description:"issue status"
         },
         open:{
-          bsonType: Boolean,
+          bsonType: "bool",
           description:"boolean value of the issue status"
         },
         issue_title:{
-          bsonType:String,
+          bsonType:"string",
           description:"the title of the issue"
         },
         issue_text:{
-          bsonType:String,
+          bsonType:"string",
           description:"issue submitter"
         },
         created_on:{
-          bsonType:Date,
+          bsonType:"date",
           description:"the date the issue was submitted"
         },
         updated_on:{
-          bsonType:Date,
+          bsonType:"date",
           description:"the date of issue updated at"
         }
     }
@@ -64,19 +64,31 @@ app.route('/:project/')
 
   app.route('/api/issues/:project')
 
-    .get(function get(req, res){
+    .get(async function(req, res){
       let project = req.params.project;
-      let col = db.collection(project,{validator:schema});
-      res.send(project);
+      if(req.query){
+        let issues= await db.collection(project).find({open:req.query==="true"?true:false,assigned_to:req.query?req.query:}).toArray();
+        res.send(issues);
+      }else{
+      let issues = await db.collection(project).find().toArray()
+      res.send(issues);
+      }
     })
-    
     .post(async function (req, res){
       let project = req.params.project;
-      var col=await checkColl(project,db)
-      console.log(`a request to open an issue with project ${project} has been received`);
+      let {assigned_to="",status_text="",open="true",created_on=new Date().toDateString(),updated_on=new Date().toDateString(),created_by,issue_text,issue_title}=req.body;
+      var col=await checkColl(project,db);
       if(col){
-      col.insertOne(req.body,(err,doc)=>{
-        err?res.send(err):res.send(doc)
+      col.insertOne({
+        assigned_to:assigned_to,status_text:status_text,open:open==="true",created_on:new Date(created_on),updated_on:new Date(updated_on),created_by:created_by,issue_text:issue_text,issue_title:issue_title
+      },(err,doc)=>{
+        if(err){
+          if(err.code==121){
+            res.send({error:"required field(s) missing"})
+          }
+        }else{
+          res.send(doc)
+        }
       })
       }else{
         res.send("could'nt create collection")

@@ -5,8 +5,8 @@ const server = require('../server');
 chai.use(chaiHttp);
 
 suite('Functional Tests', function() {
-  test("Create an issue with every field: POST request",function(){
-    let project="spaceX"
+  let project ="spaceX";
+  test("Create an issue with every field: POST request",function(done){
     chai.request(server).post("/api/issues/"+project)
     .type("form").send({
       assigned_to:"mido",
@@ -18,8 +18,76 @@ suite('Functional Tests', function() {
       created_on:new Date(),
       updated_on:new Date()
     }).end((err,res)=>{
-      err?console.log(err):console.log(res.body.acknowledged)
+      if(err){
+        console.log(err)
+      }else{
+        console.log(res.body)
+        assert.equal(res.body.acknowledged,true)
+      }
+      done()
+    })
+  });
+  test("Create an issue with only required fields: POST request",function(done){
+    chai.request(server).post("/api/issues/"+project)
+    .type("form").send({
+      issue_title:"can some one fix my shit",
+      issue_text:"i cannot log in for the last week",
+      created_by:"mido"
+    }).end((err,res)=>{
+      if(err){
+        console.log(err);
+      }
+      else{
+        assert.equal(res.body.acknowledged,true);
+      }
+      done()
     })
   })
-});
-// check why validation not working
+  test("Create an issue with missing required fields: POST request",function(done){
+    chai.request(server).post("/api/issues/"+project).type("form")
+    .send({
+      issue_text:"i cannot log in for the last week",
+      created_by:"mido"
+    }).end((err,res)=>{
+      if(err){
+        console.log(err)
+      }else{
+        assert.deepEqual(res.body,{error:"required field(s) missing"})
+      }
+      done()
+    })
+  })
+  test("View issues on a project: GET request",function(done){
+    chai.request(server).get("/api/issues/"+project).type("form")
+    .end((err,res)=>{
+      if(err){
+        console.log(err)
+      }else{
+        assert.equal(res.body.length,2);
+      }
+      done()
+    })
+  })
+  test("View issues on a project with one filter: GET request",function(done){
+    chai.request(server).get("/api/issues/"+project+"?open=true")
+    .end((err,res)=>{
+      if(err){
+        console.error(err)
+      }else{
+        assert.equal(res.body.length,2)
+      }
+      done()
+    })
+  })
+  test("View issues on a project with multiple filters: GET request to",function(done){
+    chai.request(server).get("/api/issues/"+project+"?open=true&assigned_to=mido")
+    .end((err,res)=>{
+      if(err){
+        console.error(err)
+      }else{
+        assert.equal(res.body.length,1)
+      }
+      done()
+    })
+  })
+})
