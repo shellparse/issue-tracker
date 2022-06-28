@@ -3,12 +3,12 @@ const chai = require('chai');
 const assert = chai.assert;
 const server = require('../server');
 chai.use(chaiHttp);
+var issue_to_edit="";
 
 suite('Functional Tests', function() {
   let project ="spaceX";
   test("Create an issue with every field: POST request",function(done){
-    chai.request(server).post("/api/issues/"+project)
-    .type("form").send({
+    let to_send= {
       assigned_to:"mido",
       status_text:"we still working on it",
       open:true,
@@ -17,12 +17,22 @@ suite('Functional Tests', function() {
       issue_text:"i cannot log in for the last week",
       created_on:new Date(),
       updated_on:new Date()
-    }).end((err,res)=>{
+    }
+    chai.request(server).post("/api/issues/"+project)
+    .type("form").send(to_send).end((err,res)=>{
       if(err){
         console.log(err)
       }else{
-        console.log(res.body)
-        assert.equal(res.body.acknowledged,true)
+        assert.nestedInclude(res.body,{
+          assigned_to:"mido",
+          status_text:"we still working on it",
+          open:"true",
+          created_by:"mizo",
+          issue_title:"can some one fix my shit",
+          issue_text:"i cannot log in for the last week",
+          created_on:to_send.created_on.toISOString(),
+          updated_on:to_send.updated_on.toISOString()
+        })
       }
       done()
     })
@@ -38,7 +48,9 @@ suite('Functional Tests', function() {
         console.log(err);
       }
       else{
-        assert.equal(res.body.acknowledged,true);
+        assert.nestedInclude(res.body,{issue_title:"can some one fix my shit",
+        issue_text:"i cannot log in for the last week",
+        created_by:"mido"});
       }
       done()
     })
@@ -58,18 +70,21 @@ suite('Functional Tests', function() {
     })
   })
   test("View issues on a project: GET request",function(done){
-    chai.request(server).get("/api/issues/"+project).type("form")
+    chai.request(server).get("/api/issues/"+project)
     .end((err,res)=>{
       if(err){
         console.log(err)
       }else{
+        if(res.body[0]._id){
+          issue_to_edit=res.body[0]._id;
+        }
         assert.equal(res.body.length,2);
       }
       done()
     })
   })
   test("View issues on a project with one filter: GET request",function(done){
-    chai.request(server).get("/api/issues/"+project+"?open=true")
+    chai.request(server).get("/api/issues/"+project).query({open:true})
     .end((err,res)=>{
       if(err){
         console.error(err)
@@ -80,7 +95,7 @@ suite('Functional Tests', function() {
     })
   })
   test("View issues on a project with multiple filters: GET request to",function(done){
-    chai.request(server).get("/api/issues/"+project+"?open=true&assigned_to=mido")
+    chai.request(server).get("/api/issues/"+project).query({open:true,assigned_to:"mido"})
     .end((err,res)=>{
       if(err){
         console.error(err)
@@ -89,5 +104,60 @@ suite('Functional Tests', function() {
       }
       done()
     })
+  })
+  test("Update one field on an issue: PUT request to",function(done){
+    if(issue_to_edit){
+    chai.request(server).put("/api/issues/"+project).query({open:false}).type("form")
+    .send({_id:issue_to_edit}).end((err,res)=>{
+      if(err){console.error(err)}else{
+        assert.equal(res.body.value._id,issue_to_edit)
+      }
+    })
+    }else{
+      console.error("test body not provided in the test ")
+      assert.typeOf(issue_to_edit,"string");
+    }
+    done()
+  })
+  test("Update multiple fields on an issue: PUT request",function(done){
+    chai.request(server).put("/api/issues/"+project).query({open:true,assigned_to:"new person"}).type("form")
+    .send({_id:issue_to_edit}).end((err,res)=>{
+      if(err){
+        console.error(err);
+      }else{
+        assert.equal(res.body.value._id,issue_to_edit)
+      }
+    })
+    done()
+  })
+  test("Update an issue with missing _id",function(done){
+    chai.request(server).put("/api/issues/"+project).send({}).end((err,res)=>{
+      if(err){
+        console.error(err);
+      }else{
+        assert.deepEqual(res.body,{error:"missing _id"})
+      }
+    })
+    done();
+  })
+  test("Update an issue with no fields to update",function(done){
+    chai.request(server).put("/api/issues/"+project).type("form").query({}).send({_id:issue_to_edit}).end((err,res)=>{
+      if(err){
+        console.error(err)
+      }else{
+        assert.deepEqual(res.body,{error: "no update field(s) sent"})
+      }
+    })
+    done();
+  })
+  test("Update an issue with an invalid id",function(done){
+    chai.request(server).put("/api/issues/"+project).type("form").send({_id:"not a valid id"}).end((err,res)=>{
+      if(err){
+        console.error(err);
+      }else{
+        assert.deepEqual(res.body,{error:"no update field(s) sent"})
+      }
+    })
+    done();
   })
 })

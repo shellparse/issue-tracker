@@ -1,8 +1,13 @@
+const {ObjectId} = require("mongodb");
 const schema = {
   $jsonSchema:{
     bsonType:"object",
     required:["issue_title","issue_text","created_by"],
     properties:{
+        created_by:{
+          bsonType:"string",
+          description:"who submitted the issue"
+        },
         assigned_to:{
           bsonType:"string",
           description:"the person to whom the issue is assigned"
@@ -21,7 +26,7 @@ const schema = {
         },
         issue_text:{
           bsonType:"string",
-          description:"issue submitter"
+          description:"issue description"
         },
         created_on:{
           bsonType:"date",
@@ -66,13 +71,17 @@ app.route('/:project/')
 
     .get(async function(req, res){
       let project = req.params.project;
-      if(req.query){
-        let issues= await db.collection(project).find({open:req.query==="true"?true:false,assigned_to:req.query?req.query:}).toArray();
-        res.send(issues);
-      }else{
-      let issues = await db.collection(project).find().toArray()
+      let query = {}
+      if(req.query.open){query.open=req.query.open==="false"?false:true}
+      if(req.query.assigned_to){query.assigned_to=req.query.assigned_to}
+      if(req.query.issue_text){query.issue_text=req.query.issue_text}
+      if(req.query.issue_title){query.issue_title=req.query.issue_title}
+      if(req.query.status_text){query.status_text=req.query.status_text}
+      if(req.query.created_by){query.created_by=req.query.created_by}
+      if(req.query.created_on){query.created_on=new Date(req.query.created_on)}
+      if(req.query.updated_on){query.updated_on=new Date(req.query.updated_on)}
+      let issues= await db.collection(project).find(query).toArray();
       res.send(issues);
-      }
     })
     .post(async function (req, res){
       let project = req.params.project;
@@ -87,7 +96,7 @@ app.route('/:project/')
             res.send({error:"required field(s) missing"})
           }
         }else{
-          res.send(doc)
+          res.send(req.body)
         }
       })
       }else{
@@ -95,14 +104,36 @@ app.route('/:project/')
       }
     })
     
-    .put(function (req, res){
+    .put(async function (req, res){
       let project = req.params.project;
-      let col = db.collection(project,{validator:schema});
+      let update_with={}
+      if(req.query.open){update_with.open=req.query.open==="false"?false:true}
+      if(req.query.assigned_to){update_with.assigned_to=req.query.assigned_to}
+      if(req.query.issue_text){update_with.issue_text=req.query.issue_text}
+      if(req.query.issue_title){update_with.issue_title=req.query.issue_title}
+      if(req.query.status_text){update_with.status_text=req.query.status_text}
+      if(req.query.created_by){update_with.created_by=req.query.created_by}
+      if(req.query.created_on){update_with.created_on=new Date(req.query.created_on)}
+      if(req.query.updated_on){update_with.updated_on=new Date(req.query.updated_on)}
+      if(req.body._id){
+        if(Object.keys(update_with).length>0){
+      let col = await db.collection(project).findOneAndUpdate({_id:ObjectId(req.body._id)},{$set:update_with},{returnDocument:"after"});
+      if(col){
+        res.send(col)
+      }else{
+        res.send({error:"could'nt update with id "+req.body._id})
+      }
+    }else{
+      res.send({error:"no update field(s) sent"})
+    }
+    }else{
+      res.send({error:"missing _id"})
+    }
     })
     
     .delete(function (req, res){
       let project = req.params.project;
-      let col = db.collection(project,{validator:schema});
+      
     });  
     //404 Not Found Middleware
     app.use(function(req, res, next) {
