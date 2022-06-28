@@ -26,13 +26,14 @@ suite('Functional Tests', function() {
         assert.nestedInclude(res.body,{
           assigned_to:"mido",
           status_text:"we still working on it",
-          open:"true",
+          open:true,
           created_by:"mizo",
           issue_title:"can some one fix my shit",
           issue_text:"i cannot log in for the last week",
           created_on:to_send.created_on.toISOString(),
           updated_on:to_send.updated_on.toISOString()
         })
+        assert.isNumber(Date.parse(res.body.created_on));
       }
       done()
     })
@@ -51,6 +52,17 @@ suite('Functional Tests', function() {
         assert.nestedInclude(res.body,{issue_title:"can some one fix my shit",
         issue_text:"i cannot log in for the last week",
         created_by:"mido"});
+        assert.property(res.body, 'created_on');
+        assert.isNumber(Date.parse(res.body.created_on));
+        assert.property(res.body, 'updated_on');
+        assert.isNumber(Date.parse(res.body.updated_on));
+        assert.property(res.body, 'open');
+        assert.isBoolean(res.body.open);
+        assert.isTrue(res.body.open);
+        assert.property(res.body, '_id');
+        assert.isNotEmpty(res.body._id);
+        assert.property(res.body, 'status_text');
+        assert.isEmpty(res.body.status_text);
       }
       done()
     })

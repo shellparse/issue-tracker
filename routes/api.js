@@ -85,11 +85,11 @@ app.route('/:project/')
     })
     .post(async function (req, res){
       let project = req.params.project;
-      let {assigned_to="",status_text="",open="true",created_on=new Date().toDateString(),updated_on=new Date().toDateString(),created_by,issue_text,issue_title}=req.body;
+      let {assigned_to="",status_text="",open=true,created_on=new Date().toISOString(),updated_on=new Date().toISOString(),created_by,issue_text,issue_title}=req.body;
       var col=await checkColl(project,db);
       if(col){
       col.insertOne({
-        assigned_to:assigned_to,status_text:status_text,open:open==="true",created_on:new Date(created_on),updated_on:new Date(updated_on),created_by:created_by,issue_text:issue_text,issue_title:issue_title
+        assigned_to:assigned_to,status_text:status_text,open:true,created_on:new Date(created_on),updated_on:new Date(updated_on),created_by:created_by,issue_text:issue_text,issue_title:issue_title
       },(err,doc)=>{
         if(err){
           if(err.code==121){
@@ -97,7 +97,7 @@ app.route('/:project/')
           }
         }else{
           if(doc.acknowledged===true){
-          res.send({...req.body,_id:doc.insertedId})
+          res.send({assigned_to:assigned_to,status_text:status_text,open:open,created_on:created_on,created_by:created_by,updated_on:updated_on,issue_text:issue_text,issue_title:issue_title,status_text:status_text,_id:doc.insertedId})
           }else{
             res.send({error:"document to inserted"})
           }
