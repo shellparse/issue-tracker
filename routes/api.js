@@ -96,11 +96,15 @@ app.route('/:project/')
             res.send({error:"required field(s) missing"})
           }
         }else{
-          res.send(req.body)
+          if(doc.acknowledged===true){
+          res.send({...req.body,_id:doc.insertedId})
+          }else{
+            res.send({error:"document to inserted"})
+          }
         }
       })
       }else{
-        res.send("could'nt create collection")
+        res.send({error:"could'nt create collection"})
       }
     })
     
