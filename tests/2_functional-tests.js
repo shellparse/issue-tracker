@@ -119,10 +119,10 @@ suite('Functional Tests', function() {
   })
   test("Update one field on an issue: PUT request to",function(done){
     if(issue_to_edit){
-    chai.request(server).put("/api/issues/"+project).query({open:false}).type("form")
-    .send({_id:issue_to_edit}).end((err,res)=>{
+    chai.request(server).put("/api/issues/"+project).type("form")
+    .send({_id:issue_to_edit,issue_text:"new issue text"}).end((err,res)=>{
       if(err){console.error(err)}else{
-        assert.equal(res.body.value._id,issue_to_edit)
+        assert.deepEqual(res.body, {result:'successfully updated',_id: issue_to_edit});
       }
     })
     }else{
@@ -132,12 +132,12 @@ suite('Functional Tests', function() {
     done()
   })
   test("Update multiple fields on an issue: PUT request",function(done){
-    chai.request(server).put("/api/issues/"+project).query({open:true,assigned_to:"new person"}).type("form")
-    .send({_id:issue_to_edit}).end((err,res)=>{
+    chai.request(server).put("/api/issues/"+project).type("form")
+    .send({_id:issue_to_edit,open:true,assigned_to:"new person"}).end((err,res)=>{
       if(err){
         console.error(err);
       }else{
-        assert.equal(res.body.value._id,issue_to_edit)
+        assert.equal(res.body._id,issue_to_edit)
       }
     })
     done()

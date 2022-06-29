@@ -111,19 +111,20 @@ app.route('/:project/')
     .put(async function (req, res){
       let project = req.params.project;
       let update_with={}
-      if(req.query.open){update_with.open=req.query.open==="false"?false:true}
-      if(req.query.assigned_to){update_with.assigned_to=req.query.assigned_to}
-      if(req.query.issue_text){update_with.issue_text=req.query.issue_text}
-      if(req.query.issue_title){update_with.issue_title=req.query.issue_title}
-      if(req.query.status_text){update_with.status_text=req.query.status_text}
-      if(req.query.created_by){update_with.created_by=req.query.created_by}
-      if(req.query.created_on){update_with.created_on=new Date(req.query.created_on)}
-      if(req.query.updated_on){update_with.updated_on=new Date(req.query.updated_on)}
+      if(req.body.open){update_with.open=req.body.open==="false"?false:true}
+      if(req.body.assigned_to){update_with.assigned_to=req.body.assigned_to}
+      if(req.body.issue_text){update_with.issue_text=req.body.issue_text}
+      if(req.body.issue_title){update_with.issue_title=req.body.issue_title}
+      if(req.body.status_text){update_with.status_text=req.body.status_text}
+      if(req.body.created_by){update_with.created_by=req.body.created_by}
+      if(req.body.created_on){update_with.created_on=new Date(req.body.created_on)}
+      if(req.body.updated_on){update_with.updated_on=new Date(req.body.updated_on)}
       if(req.body._id){
         if(Object.keys(update_with).length>0){
       let col = await db.collection(project).findOneAndUpdate({_id:ObjectId(req.body._id)},{$set:update_with},{returnDocument:"after"});
       if(col){
-        res.send(col)
+        res.send({
+          result: 'successfully updated',_id: col.value._id})
       }else{
         res.send({error:"could'nt update with id "+req.body._id})
       }
