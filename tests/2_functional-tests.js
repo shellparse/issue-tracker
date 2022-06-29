@@ -157,7 +157,7 @@ suite('Functional Tests', function() {
       if(err){
         console.error(err)
       }else{
-        assert.deepEqual(res.body,{error: "no update field(s) sent"})
+        assert.deepEqual(res.body,{error: "no update field(s) sent",_id: issue_to_edit})
       }
     })
     done();
@@ -167,9 +167,24 @@ suite('Functional Tests', function() {
       if(err){
         console.error(err);
       }else{
-        assert.deepEqual(res.body,{error:"no update field(s) sent"})
+        assert.deepEqual(res.body,{error:"could not update",_id:"not a valid id"})
       }
     })
+    done();
+  })
+  test("a get request with id as a query param will return the document",function(done){
+    chai.request(server).get("/api/issues/"+project).query({_id:issue_to_edit}).end((err,res)=>{
+      if(err){
+        console.error(err)
+      }else{
+        assert.isArray(res.body);
+        assert.isObject(res.body[0]);
+      }
+    })
+    done();
+  })
+  test("Delete an issue: DELETE request ",function(done){
+    chai.request(server).delete("/api/issues/"+project).
     done();
   })
 })

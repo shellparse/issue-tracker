@@ -72,6 +72,7 @@ app.route('/:project/')
     .get(async function(req, res){
       let project = req.params.project;
       let query = {}
+      if(req.query._id){query._id=ObjectId(req.query._id)}
       if(req.query.open){query.open=req.query.open==="false"?false:true}
       if(req.query.assigned_to){query.assigned_to=req.query.assigned_to}
       if(req.query.issue_text){query.issue_text=req.query.issue_text}
@@ -121,15 +122,16 @@ app.route('/:project/')
       if(req.body.updated_on){update_with.updated_on=new Date(req.body.updated_on)}
       if(req.body._id){
         if(Object.keys(update_with).length>0){
+          update_with.updated_on=new Date();
       let col = await db.collection(project).findOneAndUpdate({_id:ObjectId(req.body._id)},{$set:update_with},{returnDocument:"after"});
       if(col){
         res.send({
           result: 'successfully updated',_id: col.value._id})
       }else{
-        res.send({error:"could'nt update with id "+req.body._id})
+        res.send({error:"could not update"+req.body._id})
       }
     }else{
-      res.send({error:"no update field(s) sent"})
+      res.send({error:"no update field(s) sent",_id:req.body._id})
     }
     }else{
       res.send({error:"missing _id"})
