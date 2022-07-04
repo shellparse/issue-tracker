@@ -213,14 +213,14 @@ suite('Functional Tests', function() {
     done();
   })
   test("Delete an issue with an invalid _id: DELETE request",function(done){
-    chai.request(server).delete("/api/issues/"+project).send({_id:"5sdfg4sdr545sdf5g5x"}).end((err,res)=>{
+    chai.request(server).delete("/api/issues/"+project).send({_id:"5f665eb46e296f6b9b6a504d",issue_text:"new issue test"}).end((err,res)=>{
       if(err){
         console.error(err);
       }else{
         assert.isObject(res.body);
     assert.deepEqual(res.body, {
       error: 'could not delete',
-      _id: '5sdfg4sdr545sdf5g5x'
+      _id: '5f665eb46e296f6b9b6a504d'
     });
       }
     })

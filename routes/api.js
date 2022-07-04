@@ -147,7 +147,7 @@ app.route('/:project/')
         }catch(e){
           col={acknowledged:false,error:e}
         }
-        if(col.acknowledged){
+        if(col.acknowledged===true&&col.deletedCount===1){
           res.send({result: 'successfully deleted',
           _id: req.body._id
         })
