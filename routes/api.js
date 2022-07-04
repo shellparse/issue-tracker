@@ -124,11 +124,11 @@ app.route('/:project/')
         if(Object.keys(update_with).length>0){
           update_with.updated_on=new Date();
       let col = await db.collection(project).findOneAndUpdate({_id:ObjectId(req.body._id)},{$set:update_with},{returnDocument:"after"});
-      if(col){
+      if(col.value){
         res.send({
           result: 'successfully updated',_id: col.value._id})
       }else{
-        res.send({error:"could not update"+req.body._id})
+        res.send({error:"could not update",_id:req.body._id})
       }
     }else{
       res.send({error:"no update field(s) sent",_id:req.body._id})
@@ -137,10 +137,29 @@ app.route('/:project/')
       res.send({error:"missing _id"})
     }
     })
-    
-    .delete(function (req, res){
+
+    .delete(async function (req, res){
       let project = req.params.project;
-      
+      if(req.body._id){
+        let col;
+        try{
+          col = await db.collection(project).deleteOne({_id:ObjectId(req.body._id)});
+        }catch(e){
+          col={acknowledged:false,error:e}
+        }
+        if(col.acknowledged){
+          res.send({result: 'successfully deleted',
+          _id: req.body._id
+        })
+        }else{
+          res.send({
+            error: 'could not delete',
+            _id: req.body._id
+          })
+        }
+      }else{
+        res.send({ error: 'missing _id' })
+      }
     });  
     //404 Not Found Middleware
     app.use(function(req, res, next) {

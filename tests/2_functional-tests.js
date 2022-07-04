@@ -153,21 +153,25 @@ suite('Functional Tests', function() {
     done();
   })
   test("Update an issue with no fields to update",function(done){
-    chai.request(server).put("/api/issues/"+project).type("form").query({}).send({_id:issue_to_edit}).end((err,res)=>{
+    chai.request(server).put("/api/issues/"+project).type("form").send({_id:"5f665eb46e296f6b9b6a504d"}).end((err,res)=>{
       if(err){
         console.error(err)
       }else{
-        assert.deepEqual(res.body,{error: "no update field(s) sent",_id: issue_to_edit})
+        assert.deepEqual(res.body,{error: "no update field(s) sent",_id: "5f665eb46e296f6b9b6a504d"})
+
       }
     })
     done();
   })
   test("Update an issue with an invalid id",function(done){
-    chai.request(server).put("/api/issues/"+project).type("form").send({_id:"not a valid id"}).end((err,res)=>{
+    chai.request(server).put("/api/issues/"+project).type("form").send({_id:"5f665eb46e296f6b9b6a504d",issue_text:"new issue text"}).end((err,res)=>{
       if(err){
         console.error(err);
       }else{
-        assert.deepEqual(res.body,{error:"could not update",_id:"not a valid id"})
+        assert.deepEqual(res.body, {
+          error: 'could not update',
+          _id: '5f665eb46e296f6b9b6a504d'
+        });
       }
     })
     done();
@@ -184,7 +188,42 @@ suite('Functional Tests', function() {
     done();
   })
   test("Delete an issue: DELETE request ",function(done){
-    chai.request(server).delete("/api/issues/"+project).
+    chai.request(server).delete("/api/issues/"+project).send({_id:issue_to_edit}).end((err,res)=>{
+      if (err){
+        console.error(err);
+      }else{
+        assert.isObject(res.body);
+    assert.deepEqual(res.body, {
+      result: 'successfully deleted',
+      _id: issue_to_edit
+    })
+      }
+    })
+    done();
+  })
+  test("Delete an issue with missing _id: DELETE request",function(done){
+    chai.request(server).delete("/api/issues/"+project).send({}).end((err,res)=>{
+      if(err){
+        console.error(err);
+      }else{
+        assert.isObject(res.body);
+        assert.deepEqual(res.body, { error: 'missing _id' });
+      }
+    })
+    done();
+  })
+  test("Delete an issue with an invalid _id: DELETE request",function(done){
+    chai.request(server).delete("/api/issues/"+project).send({_id:"5sdfg4sdr545sdf5g5x"}).end((err,res)=>{
+      if(err){
+        console.error(err);
+      }else{
+        assert.isObject(res.body);
+    assert.deepEqual(res.body, {
+      error: 'could not delete',
+      _id: '5sdfg4sdr545sdf5g5x'
+    });
+      }
+    })
     done();
   })
 })
