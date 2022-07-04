@@ -35,7 +35,7 @@ suite('Functional Tests', function() {
         })
         assert.isNumber(Date.parse(res.body.created_on));
       }
-      done()
+      done();
     })
   });
   test("Create an issue with only required fields: POST request",function(done){

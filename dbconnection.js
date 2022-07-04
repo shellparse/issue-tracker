@@ -3,7 +3,7 @@ const {MongoMemoryServer} =require('mongodb-memory-server');
 const {MongoClient} = require("mongodb");
 async function  main(callback){
     let client;
-    if(process.env.NODE_ENV==="test"){
+    if(process.env.LOCAL_TEST==="test"){
         try{
         const mongod = await MongoMemoryServer.create();
         const dbUri = mongod.getUri();
